@@ -1,2 +1,6 @@
-package PACKAGE_NAME;public class Edge {
+public class Edge {
+    //Test
+    void hej(){
+
+    }
 }
