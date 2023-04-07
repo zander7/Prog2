@@ -17,7 +17,7 @@ public interface Graph<T> {
     Set<T> getNodes();
 
     Collection<Edge<T>> getEdgesFrom(T node);
-    Edge<T> getEdgesBetween(T node1, T node2);
+    Edge<T> getEdgeBetween(T node1, T node2);
 
     void disconnect(T node1, T node2);
 
