@@ -1,6 +1,7 @@
 //PROG2 VT2023, Inlämningsuppgift, del 1
 //Grupp 057
 //Alexander Ellnestam alel6431
+//
 
 import java.io.Serializable;
 import java.util.*;
