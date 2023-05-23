@@ -38,11 +38,14 @@ public class PathFinder extends Application {
     private VBox center;
     private HBox controls;
     private MenuBar menu;
-    private Pane mapContainer;
+    private Pane outputArea;
     private ImageView mapView;
     private Scene scene;
     private Stage stage;
     private Button newPlaceBtn;
+    private boolean changed = false;
+    private City city1, city2;
+    private ListGraph<City> listGraph = new ListGraph<>();
 
     public void start(Stage primaryStage) {
         this.stage = primaryStage;
@@ -108,9 +111,10 @@ public class PathFinder extends Application {
         public void handle(ActionEvent event) {
             Image map = new Image("file:europa.gif");
             mapView = new ImageView(map);
-            mapContainer = new Pane();
-            mapContainer.getChildren().add(mapView);
-            center.getChildren().add(mapContainer);
+            outputArea = new Pane();
+            outputArea.setId("outputArea");
+            outputArea.getChildren().add(mapView);
+            center.getChildren().add(outputArea);
 
             stage.setWidth(map.getWidth());
             stage.setHeight(map.getHeight() + menu.getHeight() + controls.getHeight());
@@ -178,11 +182,12 @@ public class PathFinder extends Application {
     class NewPlaceHandler implements EventHandler<MouseEvent> {
         @Override
         public void handle(MouseEvent event) {
-                mapView.setCursor(Cursor.CROSSHAIR);
-                newPlaceBtn.setDisable(true);
-                mapView.setPickOnBounds(true);
-                mapView.setOnMouseClicked(new ClickHandler());
-            }
+            mapView.setCursor(Cursor.CROSSHAIR);
+            newPlaceBtn.setDisable(true);
+            mapView.setPickOnBounds(true);
+            mapView.setOnMouseClicked(new ClickHandler());
+            event.consume();
+        }
     }
 
     class ClickHandler implements EventHandler<MouseEvent> {
@@ -193,24 +198,57 @@ public class PathFinder extends Application {
             msgBox.setTitle("Name");
             msgBox.setHeaderText("Name of place:");
             Optional<String> input = msgBox.showAndWait();
-            String entered = "";
+            String name = "";
 
             if (input.isPresent()) {
-                entered = input.get();
+                name = input.get();
+                double x = event.getX();
+                double y = event.getY();
+                City city = new City(name, x, y);
+                outputArea.getChildren().add(city);
+                listGraph.add(city);
+                city.setOnMouseClicked(new SelectHandler());
+
+                Label cityName = new Label(name);
+                cityName.setTranslateX(x);
+                cityName.setTranslateY(y);
+                outputArea.getChildren().add(cityName);
+
+                mapView.setCursor(Cursor.DEFAULT);
+                newPlaceBtn.setDisable(false);
+                event.consume();
             }
+        }
+    }
 
-            double x = event.getX();
-            double y = event.getY();
-            Circle mark = new Circle(x, y, 5, Color.BLUE);
-            mapContainer.getChildren().add(mark);
+    class SelectHandler implements EventHandler<MouseEvent> {
+        @Override
+        public void handle(MouseEvent event) {
+            City c = (City) event.getSource();
+            if (city1 == null && !c.equals(city2)) {
+                city1 = c;
+                city1.setFill(Color.RED);
+            } else if (city2 == null && !c.equals(city1)) {
+                city2 = c;
+                city2.setFill(Color.RED);
+            } else if (c.equals(city1) && !c.equals(city2)) {
+                c.setFill(Color.BLUE);
+                city1 = null;
+            } else if (c.equals(city2) && !c.equals(city1)) {
+                c.setFill(Color.BLUE);
+                city2 = null;
+            }
+        }
+    }
 
-            Label place = new Label(entered);
-            place.setTranslateX(x);
-            place.setTranslateY(y);
-            mapContainer.getChildren().add(place);
+    static class City extends Circle {
+        private String name;
 
-            mapView.setCursor(Cursor.DEFAULT);
-            newPlaceBtn.setDisable(false);
+        public City(String name, double x, double y) {
+            super(x, y, 10);
+            this.name = name;
+            this.setId(name);
+            setFill(Color.BLUE);
         }
     }
 }
